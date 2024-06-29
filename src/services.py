@@ -38,9 +38,9 @@ class ProductAPIService:
                         return ProductWithID(**data)
 
     async def update_product(self, product_id, product: ProductWithoutID) -> ProductWithID:
-        url = self.api_url
+        url = f"{self.api_url}{product_id}"
         async with ClientSession() as session:
-            async with session.put(url=url, data=product.model_dump()) as response:
+            async with session.put(url=url, json=product.model_dump()) as response:
                 match response.status:
                     case 404:
                         raise Error404(f"Продукт с ID {product_id} не найден")

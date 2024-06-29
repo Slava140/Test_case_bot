@@ -4,25 +4,24 @@ from aiogram.types import Message
 
 
 def name_validator(message: Message):
-    processed_text = message.text.strip(whitespace)
-    return all(
-        (
-            2 <= len(processed_text) <= 50,
-            processed_text.isalpha(),
-            not processed_text.startswith('/')
-        )
-    )
+    text = message.text
+    if not (
+            2 <= len(text) <= 50 and
+            text.isalpha() and
+            not text.startswith('/')):
+        return False
+    return text
 
 
 def price_validator(message: Message):
-    processed_text = message.text.strip()
-    if not processed_text.isdigit():
+    text = message.text
+    if not text.isdigit():
         return False
-    return int(processed_text) > 0
+    return int(text)
 
 
 def id_validator(message: Message):
-    processed_text = message.text.strip()
-    if not processed_text.isdigit():
+    text = message.text
+    if not text.isdigit():
         return False
-    return int(processed_text) > 0
+    return int(text)
