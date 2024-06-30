@@ -2,3 +2,5 @@ aiogram
 aiohttp
 pydantic
 python-dotenv
+redis
+aioredis

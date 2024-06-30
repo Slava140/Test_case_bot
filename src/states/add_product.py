@@ -84,8 +84,10 @@ async def confirm_data(callback: CallbackQuery, state: FSMContext):
     input_product = ProductWithoutID(**product_dict)
     await state.clear()
     try:
-        await product_api_service.create_product(input_product)
-        await callback.message.edit_text(text=f'Данные успешно сохранены.')
+        product = await product_api_service.create_product(input_product)
+        await callback.message.edit_text(
+            text=f'Данные успешно сохранены.\n'
+                 f'id созданного продукта: {product.id}')
     except HTTPException as error:
         await callback.message.answer(
             text=http_error_answer(status_code=error.status_code),

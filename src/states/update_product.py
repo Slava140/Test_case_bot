@@ -14,6 +14,7 @@ from src.strings import (
     http_error_answer,
     product_with_id_was_not_found,
     product_id_must_be_int_gt_0,
+    price_must_be_int_gt_0,
     product_name_must_be_str_ge_2_le_50_string_chars,
     enter_update_name,
     enter_update_price,
@@ -103,6 +104,14 @@ async def price_sent(message: Message, state: FSMContext):
     await message.answer(
         text=do_you_want_save_updates(product),
         reply_markup=inline_keyboard.confirm_yes_no
+    )
+
+
+@router.message(StateFilter(UpdateProductStates.price))
+async def warning_wrong_price(message: Message):
+    await message.answer(
+        text=price_must_be_int_gt_0,
+        reply_markup=inline_keyboard.update_cancel_skip
     )
 
 
