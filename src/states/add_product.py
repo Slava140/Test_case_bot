@@ -10,7 +10,12 @@ from src.api_schemas import ProductWithoutID
 from src.keyboards import inline_keyboard
 from src.services import product_api_service
 from src.validators import name_validator, price_validator
-
+from src.strings import (
+    http_error_answer,
+    product_name_must_be_str_ge_2_le_50_string_chars,
+    price_must_be_int_gt_0,
+    do_you_want_create
+)
 
 router = Router()
 
@@ -21,12 +26,12 @@ class CreateProductStates(StatesGroup):
     confirm = State()
 
 
-@router.message(Command('create'), StateFilter(default_state))
+@router.message(Command('add'), StateFilter(default_state))
 async def start_creation(message: Message, state: FSMContext):
     await state.set_state(CreateProductStates.name)
     await message.answer(
-        text='Введите название продукта\n\n'
-             'Чтобы отменить создание нажмите сюда: /cancel или введите эту команду вручную'
+        text='Пожалуйста, введите название продукта.',
+        reply_markup=inline_keyboard.cancel
     )
 
 
@@ -36,17 +41,16 @@ async def name_sent(message: Message, state: FSMContext):
     await state.update_data(name=input_text)
     await state.set_state(CreateProductStates.price)
     await message.answer(
-        text='Спасибо!\n'
-             'Теперь введите цену продукта в рублях\n\n'
-             'Чтобы отменить создание нажмите сюда: /cancel или введите эту команду вручную')
+        text='Хорошо, теперь цену в рублях',
+        reply_markup=inline_keyboard.cancel
+    )
 
 
-@router.message(StateFilter(CreateProductStates.name), ~F.text.startswith('/'))
+@router.message(StateFilter(CreateProductStates.name))
 async def warning_wrong_name(message: Message):
     await message.answer(
-        text='Название должно быть не меньше 2 и не больше 50 буквенных символов\n'
-             'Вы можете попробовать еще раз\n\n'
-             'Чтобы отменить создание нажмите сюда: /cancel или введите эту команду вручную'
+        text=product_name_must_be_str_ge_2_le_50_string_chars,
+        reply_markup=inline_keyboard.cancel
     )
 
 
@@ -60,37 +64,32 @@ async def price_sent(message: Message, state: FSMContext):
     product = ProductWithoutID(**entered_data)
 
     await message.answer(
-        text=f'Название: {product.name}\n'
-             f'Цена: {product.price}\n\n'
-             f'Создать продукт с введенными данными?',
-        reply_markup=inline_keyboard.confirm
+        text=do_you_want_create(product),
+        reply_markup=inline_keyboard.confirm_yes_no
     )
 
 
 @router.message(StateFilter(CreateProductStates.price))
 async def warning_wrong_price(message: Message):
     await message.answer(
-        text='Цена должна быть целым числом больше нуля\n'
-             'Вы можете попробовать еще раз\n\n'
-             'Чтобы отменить создание нажмите сюда: /cancel или введите эту команду вручную'
+        text=price_must_be_int_gt_0,
+        reply_markup=inline_keyboard.cancel
     )
 
 
 @router.callback_query(StateFilter(CreateProductStates.confirm), F.data == 'accept')
 async def confirm_data(callback: CallbackQuery, state: FSMContext):
+    await callback.answer()
     product_dict = await state.get_data()
     input_product = ProductWithoutID(**product_dict)
     await state.clear()
-    await callback.answer()
     try:
         await product_api_service.create_product(input_product)
-        await callback.message.edit_text(
-            text=f'Данные успешно сохранены.'
-        )
+        await callback.message.edit_text(text=f'Данные успешно сохранены.')
     except HTTPException as error:
-        await callback.message.edit_text(
-            text=f'Что-то пошло не так.\n\n'
-                 f'Код ошибки: {error.status_code}'
+        await callback.message.answer(
+            text=http_error_answer(status_code=error.status_code),
+            reply_markup=inline_keyboard.cancel
         )
 
 

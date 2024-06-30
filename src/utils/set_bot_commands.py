@@ -8,5 +8,5 @@ async def set_bot_commands(bot: Bot):
         types.BotCommand(command="add", description="Добавить продукт"),
         types.BotCommand(command="get_by_id", description="Получить данные продукта по id"),
         types.BotCommand(command="update_by_id", description="Обновить данные продукта по id"),
-
+        types.BotCommand(command="delete_by_id", description="Удалить продукт по id"),
     ])
