@@ -6,9 +6,7 @@ from aiogram.filters import CommandStart
 from aiogram.types import Message
 
 from src.config import settings
-from src.handlers import product_router
 from src.states.products_router import router as product_states_router
-from src.callbacks import router as callbacks_router
 from src.utils.set_bot_commands import set_bot_commands
 
 bot = Bot(token=settings.BOT_TOKEN)
@@ -22,9 +20,7 @@ async def start_command(message: Message):
 
 async def main():
     dp.include_routers(
-        product_router,
         product_states_router,
-        callbacks_router
     )
 
     await set_bot_commands(bot)
