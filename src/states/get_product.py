@@ -7,7 +7,7 @@ from aiogram.fsm.context import FSMContext
 from src.http_errors import HTTPException, Error404
 from src.services import product_api_service
 from src.validators import id_validator
-from keyboards import inline_keyboard
+from src.keyboards import inline_keyboard
 from src.strings import http_error_answer, product_with_id_was_not_found, product_id_must_be_int_gt_0, enter_id
 
 
